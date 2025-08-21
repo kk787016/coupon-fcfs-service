@@ -63,6 +63,9 @@ public class BaseData implements CommandLineRunner {
         }
     }
     public void initRedis() {
+
+        redisTemplateForCoupon.delete("UsedUsers");
+
         HashOperations<String, String, String> hash = redisTemplateForCoupon.opsForHash();
 
         hash.put("A","1","0");
@@ -77,6 +80,13 @@ public class BaseData implements CommandLineRunner {
         hash.put("Stock","A","1");
         hash.put("Stock","B","30");
         hash.put("Stock","C","69");
+
+
+        hash.put("StockCheck","A","0");
+        hash.put("StockCheck","B","0");
+        hash.put("StockCheck","C","0");
+
+
 
     }
 }

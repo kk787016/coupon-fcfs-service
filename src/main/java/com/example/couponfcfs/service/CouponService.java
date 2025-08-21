@@ -11,9 +11,11 @@ import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -24,15 +26,37 @@ public class CouponService {
 
     private final CouponRepository couponRepository;
     private final RedisTemplate<String, Object> redisTemplateForCoupon;
+    private final RedisScript<String> issueCouponScript;
 
     @Transactional
     public ResponseDto selectCoupon(String id) {
 
-        //중복 검사
-//        boolean checkDuplicate = couponRepository.existsByUserName(id);
-//        if (checkDuplicate) return null;
+        String couponName = randomCoupon();
 
-        // 확률 체크
+        List<String> keys = List.of(couponName, "Stock", "UsedUsers");
+
+        String issuedCouponField = redisTemplateForCoupon.execute(issueCouponScript, keys, couponName,id);
+
+        if (issuedCouponField.equals("DUPLICATE")){
+            log.warn("중복 꽝 ");
+            return new ResponseDto(id, "D");
+        }
+        if (issuedCouponField.equals("SOLD_OUT")){
+            log.warn("재고 꽝");
+            return new ResponseDto(id, "D");
+        }
+        if (issuedCouponField.equals("AAA")){
+            log.warn("@@@@@@@@@@@@@@@@@@@@@@@");
+            return new ResponseDto(id, "D");
+        }
+
+        log.info("사용자 ID [{}], 쿠폰 [{}] 발급 성공! 할당된 필드: {}", id, couponName, issuedCouponField);
+
+        return new ResponseDto(id, couponName);
+
+    }
+
+    private String randomCoupon(){
         String couponName = " ";
         double randNum = Math.random();
         int num = (int) (randNum * 100) + 1;
@@ -41,65 +65,7 @@ public class CouponService {
         else if (2 <= num && num <= 11) couponName = "B";
         else if (12 <= num && num <= 100) couponName = "C";
 
-        log.info("1. 랜덤함수 값 " + num);
-        log.info("2. 쿠폰 이름 " + couponName);
-
-        //couponName = "A";
-
-        // 재고 체크
-        HashOperations<String, String, String> hash = redisTemplateForCoupon.opsForHash();
-
-        int stock = Integer.parseInt(Objects.requireNonNull(hash.get("Stock", couponName)));
-
-        log.info("3. 재고 수 " + stock);
-
-        if (stock == 0) {
-            log.warn("재고 0 개,  D 반환");
-            int a = Integer.parseInt(Objects.requireNonNull(hash.get("StockCheck", "A")));
-            ++a;
-            hash.put("StockCheck", "A", String.valueOf(a));
-            return new ResponseDto(id, "D");
-        }
-
-
-//        Cursor<Map.Entry<String, String>> cursor =
-//                hash.scan(couponName, ScanOptions.NONE);
-//
-//        while (!cursor.hasNext()) {
-//            Map.Entry<String, String> entry = cursor.next();
-//            String value = entry.getValue();
-//            if (value.equals("0")) {
-//                hash.put(couponName, entry.getKey(), id);
-//            }
-//        }
-
-        Map<String, String> entries = hash.entries(couponName);
-
-        for (Map.Entry<String, String> entry : entries.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-
-            if (value.equals("0")) {
-
-                log.info("4. 쿠폰 이름  " + couponName + " 쿠폰 번호 " + key + " 쿠폰 값 " + value);
-
-                stock--;
-                hash.put(couponName, entry.getKey(), id);
-                hash.put("Stock", couponName, String.valueOf(stock));
-
-                break;
-            }
-        }
-
-
-        Map<String, String> currentStock = hash.entries("Stock");
-        log.info("5. 남은 쿠폰 갯수 " + currentStock);
-        //
-
-
-        // 리턴 만들기
-        //
-        return new ResponseDto(id, couponName);
+        return couponName;
     }
 
 
