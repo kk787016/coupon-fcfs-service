@@ -38,7 +38,7 @@ public class CouponService {
             log.warn("재고 꽝");
             return new ResponseDto(id, "D");
         }
-        if (issuedCouponField.equals("AAA")){
+        if (issuedCouponField.equals("INVALID_ARGUMENT")){
             log.warn("@@@@@@@@@@@@@@@@@@@@@@@");
             return new ResponseDto(id, "D");
         }
