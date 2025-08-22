@@ -15,9 +15,7 @@ public class CouponInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne (fetch = FetchType.LAZY)
-    @JoinColumn(name = "coupon_name", nullable = false)
-    private Coupon couponName;
+    private String couponName;
 
     private Integer couponNumber;
 
@@ -26,7 +24,7 @@ public class CouponInfo {
 
 
     @Builder
-    public CouponInfo(Coupon couponName, Integer couponNumber, String userName) {
+    public CouponInfo(String couponName, Integer couponNumber, String userName) {
         this.couponName = couponName;
         this.couponNumber = couponNumber;
         this.userName = userName;

@@ -38,6 +38,8 @@ if targetField then
     -- 중복 제거 위해 set에 추가
     redis.call("SADD", KEYS[3], ARGV[2])
 
+    -- 변경 사항 체크 용
+    redis.call("SADD", "CouponSync", KEYS[1] .. ":" .. targetField)
     -- 테스트 재고 ++
     redis.call("HINCRBY", "StockCheck", ARGV[1], 1)
 

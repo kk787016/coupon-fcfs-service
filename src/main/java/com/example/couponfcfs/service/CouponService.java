@@ -2,29 +2,22 @@ package com.example.couponfcfs.service;
 
 
 import com.example.couponfcfs.dto.ResponseDto;
-import com.example.couponfcfs.model.CouponInfo;
-import com.example.couponfcfs.repository.CouponRepository;
-import jakarta.annotation.Nullable;
+import com.example.couponfcfs.repository.CouponInfoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.Cursor;
-import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CouponService {
 
-    private final CouponRepository couponRepository;
+    private final CouponInfoRepository couponInfoRepository;
     private final RedisTemplate<String, Object> redisTemplateForCoupon;
     private final RedisScript<String> issueCouponScript;
 

@@ -1,12 +1,14 @@
 package com.example.couponfcfs.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Getter
 @NoArgsConstructor
 public class Coupon {
 
@@ -30,4 +32,5 @@ public class Coupon {
     public void updateQuantity(int quantity) {
         this.quantity = quantity;
     }
+
 }
