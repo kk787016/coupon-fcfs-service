@@ -5,6 +5,7 @@ import com.example.couponfcfs.model.Coupon;
 import com.example.couponfcfs.model.CouponInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
@@ -19,61 +20,28 @@ import java.util.*;
 @RequiredArgsConstructor
 public class CouponScheduler {
 
-    private final CouponInfoRepository couponInfoRepository;
-    private final CouponRepository couponRepository;
     private final RedisTemplate<String, Object> redisTemplateForCoupon;
+    private final CouponIssueScheduler couponIssueScheduler;
+    private final CouponStockScheduler couponStockScheduler;
 
     @Scheduled(fixedRate = 20000)
     @Transactional
     public void flushCoupons() {
-        System.out.println("### 쿠폰 동기화 스케쥴러 시작 ###");
+        log.info("### 쿠폰 동기화 스케쥴러 시작 ###");
 
-        HashOperations<String, String, String> hash = redisTemplateForCoupon.opsForHash();
         SetOperations<String, Object> set = redisTemplateForCoupon.opsForSet();
+        Long couponCount = set.size("CouponSync");
 
-        List<Object> couponsToSync = set.pop("CouponSync",100);
-
-        if (couponsToSync == null || couponsToSync.isEmpty()) {
+        if (couponCount == null || couponCount == 0) {
             log.info("동기화할 새로운 쿠폰이 없습니다.");
+            log.info("### 쿠폰 동기화 스케쥴러 끝 ###");
             return;
         }
 
-        List<CouponInfo> couponInfosToSave = new ArrayList<>();
+        couponIssueScheduler.insertCoupon();
+        couponStockScheduler.updateCouponStock();
 
-        for (Object coupon : couponsToSync) {
-            String[] parts = ((String) coupon).split(":");
-            String couponName = parts[0];
-            String couponNumber = parts[1];
-
-            String userName = hash.get(couponName, couponNumber);
-
-            if (userName != null && !"0".equals(userName)) {
-                CouponInfo newCouponInfo = CouponInfo.builder()
-                        .couponName(couponName)
-                        .couponNumber(Integer.valueOf(couponNumber))
-                        .userName(userName)
-                        .build();
-                couponInfosToSave.add(newCouponInfo);
-            }
-        }
-
-        if (!couponInfosToSave.isEmpty()) {
-
-            Map<String, String> stock = hash.entries("Stock");
-
-            List<String> couponNames = List.of("A", "B", "C");
-            List<Coupon> couponsList = couponRepository.findAllById(couponNames);
-
-            for (Coupon coupon : couponsList) {
-                String couponId = coupon.getId();
-                int newQuantity = Integer.parseInt(stock.get(couponId));
-                coupon.updateQuantity(newQuantity);
-            }
-
-
-            couponInfoRepository.saveAll(couponInfosToSave);
-            log.info("{}개의 쿠폰 동기화했습니다.", couponInfosToSave.size());
-        }
+        log.info("### 쿠폰 동기화 스케쥴러 끝 ###");
 
     }
 }
