@@ -1,6 +1,7 @@
 package com.example.couponfcfs.global.config;
 
 import com.example.couponfcfs.model.Coupon;
+import com.example.couponfcfs.model.CouponEmp;
 import com.example.couponfcfs.model.CouponInfo;
 import com.example.couponfcfs.repository.CouponRepository;
 import com.example.couponfcfs.repository.CouponInfoRepository;
@@ -9,6 +10,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -34,37 +38,45 @@ public class BaseData implements CommandLineRunner {
         couponRepository.save(couponB);
         couponRepository.save(couponC);
 
+
+        List<CouponInfo> allCouponInfos = new ArrayList<>();
+
+
+        CouponEmp couponA_Id = new CouponEmp("A", 1);
+
         CouponInfo couponInfoA = CouponInfo.builder()
-                .couponNumber(1)
-                .couponName("A")
-                .userName("null")
+                .couponEmp(couponA_Id)
+                .userName(null)
                 .build();
 
-        couponInfoRepository.save(couponInfoA);
+        allCouponInfos.add(couponInfoA);
 
-        for(int i = 1; i <= 30; i++){
+        for (int i = 1; i <= 30; i++) {
+            CouponEmp couponB_Id = new CouponEmp("B", i);
             CouponInfo couponInfoB = CouponInfo.builder()
-                    .couponNumber(i)
-                    .couponName("B")
-                    .userName("null")
+                    .couponEmp(couponB_Id)
+                    .userName(null)
                     .build();
-
-            couponInfoRepository.save(couponInfoB);
+            allCouponInfos.add(couponInfoB);
         }
 
-        for(int i = 1; i <= 69; i++){
+        for (int i = 1; i <= 69; i++) {
+            CouponEmp couponC_Id = new CouponEmp("C", i);
             CouponInfo couponInfoC = CouponInfo.builder()
-                    .couponNumber(i)
-                    .couponName("C")
-                    .userName("null")
+                    .couponEmp(couponC_Id)
+                    .userName(null)
                     .build();
-
-            couponInfoRepository.save(couponInfoC);
+            allCouponInfos.add(couponInfoC);
         }
+
+
+        couponInfoRepository.saveAll(allCouponInfos);
+
     }
     public void initRedis() {
 
         redisTemplateForCoupon.delete("UsedUsers");
+        redisTemplateForCoupon.delete("CouponSync");
 
         HashOperations<String, String, String> hash = redisTemplateForCoupon.opsForHash();
 

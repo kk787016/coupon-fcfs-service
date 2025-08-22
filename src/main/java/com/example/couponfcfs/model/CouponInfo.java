@@ -11,22 +11,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CouponInfo {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private CouponEmp couponEmp;
 
-    private String couponName;
-
-    private Integer couponNumber;
-
-    @Column( nullable = false)
+    @Column(unique = true)
     private String userName;
 
 
     @Builder
-    public CouponInfo(String couponName, Integer couponNumber, String userName) {
-        this.couponName = couponName;
-        this.couponNumber = couponNumber;
+    public CouponInfo(CouponEmp couponEmp, String userName) {
+        this.couponEmp = couponEmp;
         this.userName = userName;
     }
 
