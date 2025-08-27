@@ -1,8 +1,7 @@
-package com.example.couponfcfs.repository;
+package com.example.couponfcfs.scheduler;
 
-import com.example.couponfcfs.model.Coupon;
-import com.example.couponfcfs.model.CouponEmp;
-import com.example.couponfcfs.model.CouponInfo;
+import com.example.couponfcfs.model.IssuedCoupon;
+import com.example.couponfcfs.repository.IssuedCouponRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.HashOperations;
@@ -13,14 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CouponIssueScheduler {
+public class CouponIssueJob {
 
-    private final CouponInfoRepository couponInfoRepository;
+    private final IssuedCouponRepository issuedCouponRepository;
     private final RedisTemplate<String, Object> redisTemplateForCoupon;
 
     @Transactional
@@ -31,7 +29,7 @@ public class CouponIssueScheduler {
 
         List<Object> couponList = set.pop("CouponSync",100);
 
-        List<CouponInfo> couponInfosToSave = new ArrayList<>();
+        List<IssuedCoupon> issuedCouponInfosToSave = new ArrayList<>();
 
         for (Object coupon : couponList) {
             String[] parts = ((String) coupon).split(":");
@@ -41,19 +39,17 @@ public class CouponIssueScheduler {
             String userName = hash.get(couponName, couponNumber);
 
             if (userName != null && !"0".equals(userName)) {
-                CouponEmp couponEmp = new CouponEmp(couponName, Integer.parseInt(couponNumber));
 
-                CouponInfo newCouponInfo = CouponInfo.builder()
-                        .couponEmp(couponEmp)
+                IssuedCoupon newIssuedCoupon = IssuedCoupon.builder()
                         .userName(userName)
                         .build();
-                couponInfosToSave.add(newCouponInfo);
+                issuedCouponInfosToSave.add(newIssuedCoupon);
             }
         }
 
-        if (!couponInfosToSave.isEmpty()) {
-            couponInfoRepository.saveAll(couponInfosToSave);
-            log.info("{}개의 쿠폰 동기화했습니다.", couponInfosToSave.size());
+        if (!issuedCouponInfosToSave.isEmpty()) {
+            issuedCouponRepository.saveAll(issuedCouponInfosToSave);
+            log.info("{}개의 쿠폰 동기화했습니다.", issuedCouponInfosToSave.size());
         }
 
     }

@@ -1,19 +1,13 @@
-package com.example.couponfcfs.repository;
+package com.example.couponfcfs.scheduler;
 
 
-import com.example.couponfcfs.model.Coupon;
-import com.example.couponfcfs.model.CouponInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.cache.CacheProperties;
-import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
 
 @Slf4j
 @Component
@@ -21,10 +15,11 @@ import java.util.*;
 public class CouponScheduler {
 
     private final RedisTemplate<String, Object> redisTemplateForCoupon;
-    private final CouponIssueScheduler couponIssueScheduler;
-    private final CouponStockScheduler couponStockScheduler;
+    private final CouponIssueJob couponIssueJob;
+    private final CouponStockJob couponStockJob;
 
     @Scheduled(fixedRate = 20000)
+    //@Scheduled(fixedDelay = )
     @Transactional
     public void flushCoupons() {
         log.info("### 쿠폰 동기화 스케쥴러 시작 ###");
@@ -38,8 +33,8 @@ public class CouponScheduler {
             return;
         }
 
-        couponIssueScheduler.insertCoupon();
-        couponStockScheduler.updateCouponStock();
+        couponIssueJob.insertCoupon();
+        couponStockJob.updateCouponStock();
 
         log.info("### 쿠폰 동기화 스케쥴러 끝 ###");
 

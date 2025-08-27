@@ -1,13 +1,12 @@
-package com.example.couponfcfs.repository;
+package com.example.couponfcfs.scheduler;
 
 
 import com.example.couponfcfs.model.Coupon;
-import com.example.couponfcfs.model.CouponInfo;
+import com.example.couponfcfs.repository.CouponRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +16,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CouponStockScheduler {
+public class CouponStockJob {
 
     private final CouponRepository couponRepository;
     private final RedisTemplate<String, Object> redisTemplateForCoupon;
@@ -33,7 +32,7 @@ public class CouponStockScheduler {
         List<Coupon> couponsList = couponRepository.findAllById(couponNames);
 
         for (Coupon coupon : couponsList) {
-            String couponId = coupon.getId();
+            Long couponId = coupon.getId();
             int newQuantity = Integer.parseInt(stock.get(couponId));
             coupon.updateQuantity(newQuantity);
         }
