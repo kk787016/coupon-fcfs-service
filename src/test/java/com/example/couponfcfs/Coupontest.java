@@ -1,7 +1,6 @@
 package com.example.couponfcfs;
 
-import com.example.couponfcfs.dto.ResponseDto;
-import com.example.couponfcfs.service.CouponService;
+import com.example.couponfcfs.service.CouponServiceWithLua;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,13 +20,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 public class Coupontest {
 
-    private final CouponService couponService;
+    private final CouponServiceWithLua couponServiceWithLua;
     private final RedisTemplate<String, Object> redisTemplateForCoupon;
 
     @Autowired
-    public Coupontest(CouponService couponService, RedisTemplate<String, Object> redisTemplateForCoupon) {
+    public Coupontest(CouponServiceWithLua couponServiceWithLua, RedisTemplate<String, Object> redisTemplateForCoupon) {
         this.redisTemplateForCoupon = redisTemplateForCoupon;
-        this.couponService  = couponService;
+        this.couponServiceWithLua = couponServiceWithLua;
     }
 
     @BeforeEach
@@ -38,9 +37,12 @@ public class Coupontest {
         redisTemplateForCoupon.delete("A");
         redisTemplateForCoupon.delete("B");
         redisTemplateForCoupon.delete("C");
+
         redisTemplateForCoupon.delete("Stock");
+
         redisTemplateForCoupon.delete("StockCheck");
         redisTemplateForCoupon.delete("UsedUsers");
+
         hash.put("A","1","0");
 
         for(int i = 1; i <= 30; i++){
@@ -65,15 +67,15 @@ public class Coupontest {
 
         HashOperations<String, String, String> hash = redisTemplateForCoupon.opsForHash();
 
-        int threadCount = 200;
+        int threadCount = 500;
 
-        ExecutorService executorService = Executors.newFixedThreadPool(16);
+        ExecutorService executorService = Executors.newFixedThreadPool(200);
         CountDownLatch latch = new CountDownLatch(threadCount);
         for (int i = 0; i < threadCount; i++) {
             executorService.submit(() -> {
                 try{
                     String randomId = UUID.randomUUID().toString();
-                    couponService.selectCoupon(randomId);
+                    couponServiceWithLua.selectCoupon(randomId);
                 }finally {
                     latch.countDown();
                 }
