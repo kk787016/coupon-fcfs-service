@@ -7,8 +7,8 @@ import lombok.Getter;
 @Getter
 public class ResponseDto {
 
-    String userId;
-    String item;
+    private final String userId;
+    private final String item;
 
     @Builder
     public ResponseDto(String userId, String item) {

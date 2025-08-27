@@ -10,19 +10,28 @@ import lombok.NoArgsConstructor;
 public class Coupon {
 
     @Id
-    @Column(name = "coupon")
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column
-    private int quantity;
+    @Column(name = "COUPON_NAME", nullable = false, unique = true)
+    private String couponName;
 
-    public Coupon(String id, int quantity) {
-        this.id = id;
-        this.quantity = quantity;
+    @Column(name = "ISSUE_QUANTITY", nullable = false)
+    private int issueQuantity;
+
+    @Column(name = "CURRENT_ISSUED_COUNT",nullable = false)
+    private int currentIssuedCount;
+
+
+    public Coupon(String couponName, int quantity) {
+        this.couponName = couponName;
+        this.issueQuantity = quantity;
+        this.currentIssuedCount = quantity;
+
     }
 
     public void updateQuantity(int quantity) {
-        this.quantity = quantity;
+        this.currentIssuedCount = quantity;
     }
 
 }
