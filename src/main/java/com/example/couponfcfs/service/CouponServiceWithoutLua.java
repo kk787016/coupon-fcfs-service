@@ -1,9 +1,6 @@
 package com.example.couponfcfs.service;
 
 import com.example.couponfcfs.dto.ResponseDto;
-import com.example.couponfcfs.model.IssuedCoupon;
-import com.example.couponfcfs.model.Status;
-import com.example.couponfcfs.repository.IssuedCouponRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
@@ -20,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 public class CouponServiceWithoutLua implements CouponService {
 
     private final RedissonClient redissonClient;
-    private final IssuedCouponRepository issuedCouponRepository;
     private final RedisTemplate<String, Object> redisTemplateForCoupon;
 
 
@@ -36,21 +32,21 @@ public class CouponServiceWithoutLua implements CouponService {
 
 
         try {
-            boolean isLocked = lock.tryLock(5,3, TimeUnit.SECONDS); // 5초대기 3초 점유
+            boolean isLocked = lock.tryLock(5, 3, TimeUnit.SECONDS); // 5초대기 3초 점유
             if (!isLocked) {
                 throw new RuntimeException("많은 양으로 발급 실패");
             }
 
             Long addedCount = redisTemplateForCoupon.opsForSet().add("duplicate", userId);
 
-            log.info("<UNK>" + couponName+ "<UNK>" + addedCount);
-            if (addedCount == null ||addedCount == 0) {
+            log.info("<UNK>" + couponName + "<UNK>" + addedCount);
+            if (addedCount == null || addedCount == 0) {
                 log.info("중복이에용");
                 return new ResponseDto(userId, "D");
             }
             // 재고 확인.
-            Object currentStock =  redisTemplateForCoupon.opsForValue().get(couponName);
-            if (currentStock == null ||currentStock.equals("0")) {
+            Object currentStock = redisTemplateForCoupon.opsForValue().get(couponName);
+            if (currentStock == null || currentStock.equals("0")) {
                 log.info("재고 없어용");
                 return new ResponseDto(userId, "D");
             }
@@ -60,13 +56,11 @@ public class CouponServiceWithoutLua implements CouponService {
             String issueInfo = couponName + ":" + userId;
 
             redisTemplateForCoupon.opsForList().rightPush(COUPON_ISSUE_QUEUE_KEY, issueInfo);
-            //issuedCouponRepository.save(new IssuedCoupon(couponName, userId, Status.ISSUED));
 
 
-        }catch (InterruptedException e){
-           throw new RuntimeException("<UNK>");
-        }
-        finally {
+        } catch (InterruptedException e) {
+            throw new RuntimeException("<UNK>");
+        } finally {
             lock.unlock();
         }
 

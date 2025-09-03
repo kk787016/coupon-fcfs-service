@@ -1,4 +1,4 @@
-package com.example.couponfcfs.scheduler;
+package com.example.couponfcfs.scheduler.withLua;
 
 import com.example.couponfcfs.model.IssuedCoupon;
 import com.example.couponfcfs.repository.IssuedCouponRepository;
@@ -22,12 +22,12 @@ public class CouponIssueJob {
     private final RedisTemplate<String, Object> redisTemplateForCoupon;
 
     @Transactional
-    public void insertCoupon(){
+    public void insertCoupon() {
 
         HashOperations<String, String, String> hash = redisTemplateForCoupon.opsForHash();
         SetOperations<String, Object> set = redisTemplateForCoupon.opsForSet();
 
-        List<Object> couponList = set.pop("CouponSync",100);
+        List<Object> couponList = set.pop("CouponSync", 100);
 
         List<IssuedCoupon> issuedCouponInfosToSave = new ArrayList<>();
 

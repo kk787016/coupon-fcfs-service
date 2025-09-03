@@ -1,4 +1,4 @@
-package com.example.couponfcfs.scheduler;
+package com.example.couponfcfs.scheduler.withLua;
 
 
 import lombok.RequiredArgsConstructor;
@@ -14,13 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Profile("scheduler-WithLua")
 @Component
 @RequiredArgsConstructor
-public class CouponSchedulerWithLua implements CouponScheduler {
+public class CouponSchedulerWithLua{
 
     private final RedisTemplate<String, Object> redisTemplateForCoupon;
     private final CouponIssueJob couponIssueJob;
     private final CouponStockJob couponStockJob;
 
-    @Override
     @Scheduled(fixedRate = 20000)
     //@Scheduled(fixedDelay = )
     @Transactional
