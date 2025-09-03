@@ -23,6 +23,9 @@ public class CouponServiceWithoutLua implements CouponService {
     private final IssuedCouponRepository issuedCouponRepository;
     private final RedisTemplate<String, Object> redisTemplateForCoupon;
 
+
+    private static final String COUPON_ISSUE_QUEUE_KEY = "coupon_issue_queue";
+
     @Override
     @Transactional
     public ResponseDto selectCoupon(String userId) {
@@ -51,8 +54,13 @@ public class CouponServiceWithoutLua implements CouponService {
                 log.info("재고 없어용");
                 return new ResponseDto(userId, "D");
             }
+
             redisTemplateForCoupon.opsForValue().decrement(couponName);
-            issuedCouponRepository.save(new IssuedCoupon(couponName, userId, Status.ISSUED));
+
+            String issueInfo = couponName + ":" + userId;
+
+            redisTemplateForCoupon.opsForList().rightPush(COUPON_ISSUE_QUEUE_KEY, issueInfo);
+            //issuedCouponRepository.save(new IssuedCoupon(couponName, userId, Status.ISSUED));
 
 
         }catch (InterruptedException e){
