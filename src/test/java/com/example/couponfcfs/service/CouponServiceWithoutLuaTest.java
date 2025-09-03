@@ -37,24 +37,16 @@ class CouponServiceWithoutLuaTest {
     @BeforeEach
     public void setUp() {
 
-        Coupon couponA = new Coupon("A",1);
-        Coupon couponB = new Coupon("B",10);
-        Coupon couponC = new Coupon("C",89);
-
-        couponRepository.save(couponA);
-        couponRepository.save(couponB);
-        couponRepository.save(couponC);
-
         redisTemplateForCoupon.opsForValue().set("A","1");
         redisTemplateForCoupon.opsForValue().set("B","10");
         redisTemplateForCoupon.opsForValue().set("C","89");
     }
-
-    @AfterEach
-    public void tearDown() {
-        // 각 테스트가 끝난 후, RDB의 Coupon 데이터를 모두 삭제합니다.
-        couponRepository.deleteAllInBatch();
-    }
+//
+//    @AfterEach
+//    public void tearDown() {
+//        // 각 테스트가 끝난 후, RDB의 Coupon 데이터를 모두 삭제합니다.
+//        couponRepository.deleteAllInBatch();
+//    }
     @Test
     void getCoupon() throws InterruptedException{
 

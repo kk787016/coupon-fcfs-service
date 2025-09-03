@@ -61,17 +61,6 @@ public class CouponServiceWithoutLua implements CouponService {
         finally {
             lock.unlock();
         }
-        // 중복 발급 확인
-
-
-        // 재고 확인
-
-        // 통과하면 발급.
-//
-//        redisTemplateForCoupon.multi();
-//
-//        redisTemplateForCoupon.opsForSet().members(couponName);
-//        redisTemplateForCoupon.opsForSet().add(couponName,userId);
 
         return new ResponseDto(userId, couponName);
     }
